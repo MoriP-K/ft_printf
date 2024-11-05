@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   printf.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmoriyam <kmoriyam@student.42.fr>          +#+  +:+       +#+        */
+/*   By: morip <morip@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/03 16:42:52 by kmoriyam          #+#    #+#             */
-/*   Updated: 2024/11/04 20:17:06 by kmoriyam         ###   ########.fr       */
+/*   Updated: 2024/11/05 02:05:15 by morip            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ typedef struct s_list
 	int		i_val;
 	int		d_val;
 	unsigned int	u_val;
-	
+		
 	
 }	t_list;
 
