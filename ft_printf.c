@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_printf.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: morip <morip@student.42.fr>                +#+  +:+       +#+        */
+/*   By: kmoriyam <kmoriyam@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/03 16:46:04 by kmoriyam          #+#    #+#             */
-/*   Updated: 2024/11/05 03:11:41 by morip            ###   ########.fr       */
+/*   Updated: 2024/11/05 22:27:00 by kmoriyam         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,28 +15,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdarg.h>
-
-// float	ft_avg(int num, ...)
-// {
-// 	va_list	list;
-// 	float	sum;
-
-// 	va_start(list, num);
-// 	sum = 0;
-// 	for (int i = 0; i < num; i++)
-// 		sum = sum + va_copy(list, va_arg(list, int));
-// 	va_end(list);
-// 	return (sum / num);
-// }
-// void	func(char *arg1, ...)
-// {
-// 	va_list	ap;
-
-// 	va_start(ap, arg1);
-// 	printf("arg2: %d\n", va_arg(ap, int));
-// 	printf("arg3: %lf\n", va_arg(ap, double));
-// 	va_end(ap);
-// }
 
 void	ft_putstr(char *s)
 {
@@ -55,25 +33,54 @@ void	ft_putchr(char c)
 	write(1, &c, 1);
 }
 
-static void	ft_output(void *arg)
+void	ft_putnbr(int num)
+{
+	char	c;
+
+	if (num < 0)
+	{
+		if (num == -2147483648)
+		{
+			write(1, "-2147483648", 11);
+			return ;
+		}
+		write(1, "-", 1);
+		num = -num;
+	}
+	if (num >= 10)
+	{
+		ft_putnbr(num / 10);
+	}
+	c = num % 10 + '0';
+	write(1, &c, 1);
+}
+
+static int	ft_output(void *arg)
 {
 	// t_list	type;
+	int	result;
 
 	// ft_putchr(arg);
-	ft_putstr(arg);
+	result = 0;
+	if (arg)
+	{
+		ft_putstr(arg);
+		return (1);
+	}
+	return (0);
 }
 
 static int	ft_check_specifier(va_list list, const char c)
 {
-	// int i = 0x2A;
-	// int d = va_arg(list, type);
 	int	spec;
 	char *str;
+	int	result;
 
-	if (c == 'c' || c == '%')
+	result = 0;
+	if (c == 'c')
 	{
 		spec = va_arg(list, int);
-		ft_output((char *)&spec);
+		result = ft_output((char *)&spec);
 	}
 	else if (c == 's')
 	{
@@ -82,19 +89,30 @@ static int	ft_check_specifier(va_list list, const char c)
 	}
 	// else if (c == 'p')
 	// 	ft_output(va_copy(list, va_arg(list, void *)));
-	// else if (c == 'd')
-	// 	ft_output(va_copy(list, va_arg(list, int)));
-	// else if (c == 'i')
-	// 	ft_output(va_copy(list, va_arg(list, int)));
+	else if (c == 'd')
+	{
+		ft_putnbr(va_arg(list, int));
+		result = 1;
+	}
+	else if (c == 'i')
+	{
+		ft_putnbr(va_arg(list, int));
+		result = 1;
+	}
 	// else if (c == 'u')
 	// 	ft_output(va_copy(list, va_arg(list, unsigned int)));
 	// else if (c == 'x')
 	// 	ft_output(va_copy(list, va_arg(list, int)));
 	// else if (c == 'X')
 	// 	ft_output(va_copy(list, va_arg(list, int)));
-	// else if (c == '%')
-	// 	ft_output(va_copy(list, va_arg(list, )));
-	return (0);
+	else if (c == '%')
+	{
+		spec = va_arg(list, int);
+		result = ft_output((char *)&c);
+	}
+	else
+		ft_output((char *)&c);
+	return (result);
 }
 
 int	ft_printf(const char *format, ...)
@@ -113,8 +131,12 @@ int	ft_printf(const char *format, ...)
 		{
 			i++;
 			if (!ft_check_specifier(copy_list, format[i]))
-				return (0);
+				i = i + 0;
+			// else
+			// 	ft_putchr(format[i]);
 		}
+		else
+			ft_putchr(format[i]);
 		i++;
 	}
 	// length = ft_strlen(format);
@@ -126,12 +148,9 @@ int	ft_printf(const char *format, ...)
 
 int	main(void)
 {
-	// printf("%f\n", ft_avg(1, 2, 3, 4, 5));
-	// printf("\n");
-
-	// func("aaaa", 5, 3.14);
-	// ft_printf("%s, %c, %d\n", "abc", 'K', 426);
-	ft_printf("%c%s", 'K', "MORIP");
+	// ft_printf("ss\n");
+	// ft_printf("%c, %s,,,%d, %i", 'K', "MORIP", 42, 123456789);
 	// ft_printf("%s", "MORIP");
-	// printf("%s, %c, %d\n", "abc", 'K', 426);
+	printf("%s, %c, %d\n", "abc", 'K', 426);
+	printf("%d\n");
 }
