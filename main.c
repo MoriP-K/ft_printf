@@ -25,12 +25,12 @@
 
 int	main(void)
 {
+	char	base[16] = "123456789abcdefg";
+	ft_printf("%%,%s", 'K', "MORIP");
 	// printf("%f\n", ft_avg(1, 2, 3, 4, 5));
 	// printf("\n");
-
 	// func("aaaa", 5, 3.14);
 	// ft_printf("%s, %c, %d\n", "abc", 'K', 426);
-	ft_printf("%%,%s", 'K', "MORIP");
 	// ft_printf("%s", "MORIP");
 	// printf("%s, %c, %d\n", "abc", 'K', 426);
 }
