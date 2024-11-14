@@ -6,239 +6,275 @@
 /*   By: kmoriyam <kmoriyam@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/03 16:46:04 by kmoriyam          #+#    #+#             */
-/*   Updated: 2024/11/10 20:09:51 by kmoriyam         ###   ########.fr       */
+/*   Updated: 2024/11/14 22:04:48 by kmoriyam         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "printf.h"
+#include "ft_printf.h"
 
-#include <stdio.h>
-#include <unistd.h>
-#include <stdarg.h>
-#include <string.h>
-
-void	ft_putstr(char *s)
+int	ft_putstr(char *s)
 {
-	size_t	i;
+	int	i;
 
 	i = 0;
+	if (s == NULL)
+	{
+		i += write(1, "(null)", 6);
+		return (i);
+	}
 	while (s[i])
 	{
 		write(1, &s[i], 1);
 		i++;
 	}
+	return (i);
 }
 
-void	ft_putchr(char c)
+int	ft_putchr(char c)
 {
+	int	i;
+
 	write(1, &c, 1);
+	i = 1;
+	return (i);
 }
 
-void	ft_putnbr(int num)
+int	ft_putnbr(int num)
 {
 	char	c;
+	int		length;
 
+	length = 0;
 	if (num < 0)
 	{
 		if (num == -2147483648)
 		{
-			write(1, "-2147483648", 11);
-			return ;
+			length += write(1, "-2147483648", 11);
+			return (length);
 		}
-		write(1, "-", 1);
+		length += write(1, "-", 1);
 		num = -num;
 	}
 	if (num >= 10)
 	{
-		ft_putnbr(num / 10);
+		length += ft_putnbr(num / 10);
 	}
 	c = num % 10 + '0';
-	write(1, &c, 1);
+	length += write(1, &c, 1);
+	return (length);
 }
 
-void	ft_putnbr_unsignedint(unsigned int num)
+int	ft_putnbr_unsignedint(unsigned int num)
 {
 	char	c;
+	int		length;
 
-	// if (num < 0)
-	// {
-	// 	if (num == -2147483648)
-	// 	{
-	// 		write(1, "-2147483648", 11);
-	// 		return ;
-	// 	}
-	// 	write(1, "-", 1);
-	// 	num = -num;
-	// }
+	length = 0;
 	if (num >= 10)
 	{
-		ft_putnbr(num / 10);
+		length += ft_putnbr(num / 10);
 	}
 	c = num % 10 + '0';
-	write(1, &c, 1);
+	length += write(1, &c, 1);
+	return (length);
 }
 
-static int	ft_output(void *arg)
+static int	ft_puthex_lower(unsigned int num)
 {
-	int	result;
-
-	result = 0;
-	if (arg)
-	{
-		ft_putstr(arg);
-		return (1);
-	}
-	return (0);
-}
-
-static void ft_puthex_lower(int num)
-{
-	const char	lower_base[16]= "0123456789abcdef";
-	int		hex;
+	const char	lower_base[16] = "0123456789abcdef";
+	int			hex;
+	int			length;
 
 	hex = 0;
+	length = 0;
 	if (num >= 16)
 	{
-		ft_puthex_lower(num / 16);
+		length += ft_puthex_lower(num / 16);
 	}
 	if (num < 0)
 	{
 		hex = num % 16;
-		write(1, &lower_base[16 - hex - 1], 1);
+		length += write(1, &lower_base[16 - hex - 1], 1);
 	}
 	else
 	{
 		hex = num % 16;
-		write(1, &lower_base[hex], 1);
+		length += write(1, &lower_base[hex], 1);
 	}
+	return (length);
 }
-static void ft_puthex_upper(int num)
+
+static int	ft_puthex_upper(unsigned int num)
 {
-	const char	upper_base[16]= "0123456789ABCDEF";
-	int		hex;
+	const char	upper_base[16] = "0123456789ABCDEF";
+	int			hex;
+	int			length;
 
 	hex = 0;
+	length = 0;
 	if (num >= 16)
 	{
-		ft_puthex_upper(num / 16);
+		length += ft_puthex_upper(num / 16);
 	}
 	if (num < 0)
 	{
 		hex = num % 16;
-		write(1, &upper_base[16 - hex - 1], 1);
+		length += write(1, &upper_base[16 - hex - 1], 1);
 	}
 	else
 	{
 		hex = num % 16;
-		write(1, &upper_base[hex], 1);
+		length += write(1, &upper_base[hex], 1);
 	}
+	return (length);
 }
 
-static void	ft_putaddress(long int address)
+static int	ft_putaddress(unsigned long int address)
 {
 	const char	hex_base[16] = "0123456789abcdef";
-	long int		c_hex;
+	long int	c_hex;
+	int			length;
 
-	// printf("test: %d\n", address);
-	if (address > 16)
-		ft_putaddress(address / 16);	
+	length = 0;
+	if (address == 0)
+	{
+		length += ft_putstr("(nil)");
+		return (length);
+	}
+	if (address > 15)
+		length += ft_putaddress(address / 16);	
 	c_hex = address % 16;
-	write(1, &hex_base[c_hex], 1);
+	if (length == 0)
+		length += write(1, "0x", 2);
+	length += write(1, &hex_base[c_hex], 1);
+	return (length);
 }
 
 static int	ft_check_specifier(va_list list, const char c)
 {
-	int	spec;
-	char *str;
-	int	result;
-	int *ptr;
+	int		result;
+	void	*ptr;
 
+	ptr = NULL;
 	result = 0;
 	if (c == 'c')
-	{
-		spec = va_arg(list, int);
-		result = ft_output((char *)&spec);
-	}
+		result = ft_putchr(va_arg(list, int));
 	else if (c == 's')
-	{
-		str = va_arg(list, char*);
-		ft_output(str);
-	}
+		result = ft_putstr(va_arg(list, char *));
 	else if (c == 'p')
-	{
-		ptr = va_arg(list, void*);
-		// printf("p :%p\n", ptr);
-		ft_putaddress((long)ptr);
-	}
+		result = ft_putaddress((unsigned long)va_arg(list, void *));
 	else if (c == 'd' || c == 'i')
-	{
-		ft_putnbr(va_arg(list, int));
-		result = 1;
-	}
+		result = ft_putnbr(va_arg(list, int));
 	else if (c == 'u')
-		ft_putnbr_unsignedint(va_arg(list, unsigned int));
+		result = ft_putnbr_unsignedint(va_arg(list, unsigned int));
 	else if (c == 'x')
-	{
-		ft_puthex_lower(va_arg(list, int));
-	}
+		result = ft_puthex_lower(va_arg(list, int));
 	else if (c == 'X')
-	{
-		ft_puthex_upper(va_arg(list, int));
-	}
-	else if (c == '%')
-	{
-		ft_putchr(c);
-		result = 1;
-	}
+		result = ft_puthex_upper(va_arg(list, int));
 	else
-		ft_output((char *)&c);
+		result = ft_putchr(c);
 	return (result);
 }
 
 int	ft_printf(const char *format, ...)
 {
-	int		length;
 	va_list	list;
 	va_list	copy_list;
 	size_t	i;
+	int		length;
 
 	va_start(list, format);
 	va_copy(copy_list, list);
 	i = 0;
+	length = 0;
 	while (format[i])
 	{
 		if (format[i] == '%')
 		{
 			i++;
-			if (!ft_check_specifier(copy_list, format[i]))
-				i = i + 0;
+			length += ft_check_specifier(copy_list, format[i]);
 		}
 		else
-			ft_putchr(format[i]);
+			length += ft_putchr(format[i]);
 		i++;
 	}
 	va_end(list);
-	// length = ft_strlen(format);
-	length = 0;
 	return (length);
 }
 
-#include <stdio.h>
+// #include <stdio.h>
 
-int	main(void)
-{
-	int a = 1;
-	int *p;
-	p = &a;
-	printf("c : %c, %s, %p, %d, %i, %u, %x, %X, %%\n",
-		'c', "String", p, 123456789, -987654321, 2147483647, 54321, 54321);
-	ft_printf("my: %c, %s, %p, %d, %i, %u, %x, %X, %%\n",
-		'c', "String", p, 123456789, -987654321, 2147483647, 54321, 54321);
-	// char p[4] = "1234";
-	// printf("c :%p, %X\n", p, 123456);
-	// ft_printf("my:%p\n", p);
-	// printf("c : %x, %X\n", 123456, 123456);
-	// ft_printf("my: %x, %X\n", 123456, 123456);
-	printf("\n");
-	// printf("%d\n", printf(NULL));
-}
+// int	main(void)
+// {
+// 	// // char
+// 	// printf("char : OK!\n");
+// 	// printf("c : c = %c\n", 'K');
+// 	// ft_printf("my: c = %c\n", 'K');
+// 	// printf("\n");
+	
+// 	// string
+// 	printf("c : s = %s\n", "TEST");
+// 	ft_printf("my: s = %s\n", "TEST");
+// 	printf(" NULL %s NULL \n", (char *)NULL);
+// 	ft_printf(" NULL %s NULL \n", NULL);
+
+// 	printf("\n");
+	
+// 	// pointer
+// 	// void *ptr = NULL;
+// 	// printf("c : *p = %p, %p\n", LONG_MIN, LONG_MAX);
+// 	ft_printf("my: *p = %p\n", NULL);
+// 	ft_printf("my: *p = %p, %p\n", LONG_MIN, LONG_MAX);
+// 	ft_printf("my: *p = %p, %p\n", ULONG_MAX, -ULONG_MAX);
+
+// 	printf("\n");
+	
+// 	// // decimal
+// 	// printf("decimal : OK!\n");
+// 	// printf("c : d = %d\n", 123456);
+// 	// ft_printf("my: d = %d\n", 123456);
+// 	// printf("\n");
+	
+// 	// // integer
+// 	// printf("int : OK!\n");
+// 	// printf("c : i = %i\n", 0);
+// 	// ft_printf("my: i = %i\n", 0);
+// 	// printf("\n");
+	
+// 	// // unsigned int
+// 	// printf("unsigned int : OK!\n");
+// 	// printf("c : u = %u\n", -456);
+// 	// ft_printf("my: u = %u\n", -456);
+// 	// printf("\n");
+	
+// 	// small x
+// 	printf("c : x = %x\n", 0x12);
+// 	ft_printf("my: x = %x\n", 0x12);
+// 	printf("\n");
+	
+// 	// big X
+// 	printf("c : X = %X\n", 0x12);
+// 	ft_printf("my: X = %X\n", 0x12);
+// 	printf("\n");
+	
+// 	// print %
+// 	// printf("%% : OK!\n");
+// 	// printf("c : %%\n");
+// 	// ft_printf("my: %%\n");
+// 	// printf("\n");
+
+// 	// word count
+// 	// printf("c : word count = %i\n", printf("c : %c, %s, %p, %d, %i, %u, %x, %X, %%\n", 'c', "String", ptr, 123456789, -987654321, 2147483647, 54321, 54321));
+// 	// ft_printf("my: word count = %i\n", ft_printf("c : %c, %s, %p, %d, %i, %u, %x, %X, %%\n", 'c', "String", ptr, 123456789, -987654321, 2147483647, 54321, 54321));
+// 	// printf("\n");
+// 	// printf("c : %c, %s, %p, %d, %i, %u, %x, %X, %%\n",
+// 	// 	'c', "String", p, 123456789, -987654321, 2147483647, 54321, 54321);
+// 	// ft_printf("my: %c, %s, %p, %d, %i, %u, %x, %X, %%\n",
+// 	// 	'c', "String", p, 123456789, -987654321, 2147483647, 54321, 54321);
+
+// 	// printf("words: %d\n", a);
+
+// 	// printf("%d\n", printf(NULL));
+// 	// ptr = va_arg(list, void*);
+// 	// printf("\n\ndebug: %p\n", ptr);
+// }
