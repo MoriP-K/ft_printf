@@ -1,28 +1,36 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_printf.h                                        :+:      :+:    :+:   */
+/*   ft_putnbr.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: kmoriyam <kmoriyam@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/03 16:42:52 by kmoriyam          #+#    #+#             */
-/*   Updated: 2024/11/15 22:50:36 by kmoriyam         ###   ########.fr       */
+/*   Created: 2024/11/15 20:50:07 by kmoriyam          #+#    #+#             */
+/*   Updated: 2024/11/16 13:45:18 by kmoriyam         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef FT_PRINTF_H
-# define FT_PRINTF_H
-# include <stdarg.h>
-# include <stddef.h>
-# include <unistd.h>
+#include "ft_printf.h"
 
-int	ft_printf(const char *format, ...);
-int	ft_putchr(char c);
-int	ft_putaddress(unsigned long int address);
-int	ft_puthex_lower(unsigned int num);
-int	ft_puthex_upper(unsigned int num);
-int	ft_putnbr_unsigned(unsigned int num);
-int	ft_putnbr(int num);
-int	ft_putstr(char *s);
+int	ft_putnbr(int num)
+{
+	char	c;
+	int		length;
 
-#endif
+	length = 0;
+	if (num < 0)
+	{
+		if (num == -2147483648)
+		{
+			length += write(1, "-2147483648", 11);
+			return (length);
+		}
+		length += write(1, "-", 1);
+		num = -num;
+	}
+	if (num >= 10)
+		length += ft_putnbr(num / 10);
+	c = num % 10 + '0';
+	length += write(1, &c, 1);
+	return (length);
+}

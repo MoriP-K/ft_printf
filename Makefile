@@ -6,7 +6,8 @@ INCLUDES = -I.
 
 NAME = libftprintf.a
 
-SRCS = ft_printf.c
+SRCS = ft_printf.c ft_putchr.c ft_puthex_address.c ft_puthex_lower.c ft_puthex_upper.c\
+		ft_putnbr_unsigned.c ft_putnbr.c ft_putstr.c
 
 OBJS = $(SRCS:%.c=%.o)
 
